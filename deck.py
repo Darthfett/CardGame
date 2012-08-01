@@ -2,6 +2,9 @@ import random
 
 class Deck:
 
+    def remove(self, card):
+        self.cards.remove(card)
+
     def add(self, card):
         self.cards.append(card)
 
@@ -13,6 +16,9 @@ class Deck:
             return '[' + ']['.join(map(str, self.cards)) + ']'
         else:
             return ''
+
+    def __contains__(self, card):
+        return card in self.cards
 
     def shuffle(self):
         random.shuffle(self.cards)

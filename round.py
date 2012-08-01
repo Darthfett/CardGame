@@ -23,13 +23,15 @@ ROUND_ANNOUNCEMENT = (
 Beginning {phase} Phase
 """).lstrip()
 
-HELP = (
+HELP_MSG = (
 """
 Available commands are:
-    help: Show this message
     d:    Draw card
+    p:    Play card
+
     b:    Show board
     h:    Show hand
+
     q:    Quit
 """).lstrip()
 
@@ -49,6 +51,22 @@ def card_name(card):
         'K': "Knight"
     }[card]
 
+BOARD_ACTIONS = {'b', 'board'}
+DRAW_ACTIONS = {'d', 'draw'}
+HAND_ACTIONS = {'h', 'hand'}
+HELP_ACTIONS = {'', 'help'}
+PLAY_ACTIONS = {'p', 'play'}
+QUIT_ACTIONS = {'q', 'quit', 'exit'}
+
+ACTIONS_FOR_PHASE = {
+    DRAW_PHASE: DRAW_ACTIONS,
+    STRAT_PHASE: PLAY_ACTIONS,
+    BAT_PHASE: {},
+    END_PHASE: {},
+}
+
+PHASE_ACTIONS = set.union(*ACTIONS_FOR_PHASE.values())
+
 def start_phase(game, round, phase, player):
 
     phase_name = name_for_phase(phase)
@@ -63,25 +81,43 @@ def start_phase(game, round, phase, player):
 
     while True:
         action = input('Action? (help) ').lower().strip()
-        if action in {'help', ''}:
-            print(HELP)
+
+        # Validate that action is good for current phase
+        if action in PHASE_ACTIONS and action not in ACTIONS_FOR_PHASE[phase]:
+            # Invalid action
+            phases_for_action = [phase for phase in ACTIONS_FOR_PHASE if action in ACTIONS_FOR_PHASE[phase]]
+            print('Must be in {phase} phase to perform this action.\n'.format(phase=' phase OR '.join(map(name_for_phase, phases_for_action))))
             continue
-        if action in {'hand', 'h'}:
-            if player.hand:
-                print(player.hand)
-            else:
-                print('No cards in hand\n')
-            continue
-        if action in {'b', 'board'}:
+
+        if action in BOARD_ACTIONS:
+            # Display board
             print(BOARD.format(enemy_board=enemy_board, player_board=player_board))
             continue
-        if action in {'q', 'quit', 'exit'}:
-            break
-        if action in {'d', 'draw'} and phase == DRAW_PHASE:
+
+        if action in DRAW_ACTIONS:
+            # Draw card
             drawn_card = player.deck.draw()
             player.hand.add(drawn_card)
-            print('Drew {card}'.format(card=card_name(drawn_card)))
+            print('Drew {card}\n'.format(card=card_name(drawn_card)))
             start_phase(game, round, STRAT_PHASE, player)
             return
 
-        print('Unknown command {cmd}'.format(cmd=action))
+        if action in HAND_ACTIONS:
+            # Display hand
+            if player.hand:
+                print(player.hand,'\n')
+            else:
+                print('No cards in hand\n')
+            continue
+
+        if action in HELP_ACTIONS:
+            # Display help message
+            print(HELP_MSG)
+            continue
+
+        if action in QUIT_ACTIONS:
+            # Quit game
+            print("Thanks for playing!\n")
+            break
+
+        print('Unknown command {cmd}\n'.format(cmd=action))

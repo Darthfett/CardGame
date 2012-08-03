@@ -1,5 +1,10 @@
 = Unnamed Card Game =
 
+== Running ==
+* Requires python 3.2 (3.x?)
+* Run using command `python game.py`
+
+
 == Game Idea ==
 * Two players face off in a card game/duel.
 * There are three categories of cards: Energy, Nature, and Spirit.

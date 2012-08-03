@@ -71,14 +71,8 @@ def print_hand(player):
     else:
         print('No cards in hand\n')
 
-def print_board(p_field, e_field):
-
-    player_field = [(cell if cell is not None else ' ') for cell in p_field]
-    enemy_field = [(cell if cell is not None else ' ') for cell in e_field]
-
-    player_board = PLAYER_BOARD.format(*player_field)
-    enemy_board = PLAYER_BOARD.format(*enemy_field)
-    print(BOARD.format(enemy_board=enemy_board, player_board=player_board))
+def print_board(player, enemy):
+    print(BOARD.format(enemy_board=enemy.field, player_board=player.field))
 
 def start_phase(game, round, phase, player):
     game.current_round = round
@@ -108,7 +102,7 @@ def start_phase(game, round, phase, player):
 
         if cmd[0] in BOARD_ACTIONS:
             # Display board
-            print_board(player.field, enemy.field)
+            print_board(player, enemy)
             continue
 
         if cmd[0] in DRAW_ACTIONS:
@@ -165,7 +159,7 @@ def start_phase(game, round, phase, player):
             # Successful play
             player.hand.remove(card_)
             player.field[field_cell - 1] = card_
-            print_board(player.field, enemy.field)
+            print_board(player, enemy)
             continue
 
         if cmd[0] in QUIT_ACTIONS:

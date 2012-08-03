@@ -15,6 +15,12 @@ def name_for_card(card):
         'K': "Knight"
     }[card]
 
+def repr_for_card(card):
+    return {
+        card: repr(card), # Must be first line
+        None: ' ',
+    }[card]
+
 class CardType(type):
 
     def __contains__(cls, item):

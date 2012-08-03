@@ -16,6 +16,10 @@ def name_for_card(card):
     }[card]
 
 class CardType(type):
+
+    def __contains__(cls, item):
+        return item in cls.prototypes
+
     def __getitem__(cls, index):
         if len(index) == 1:
             index = name_for_card(index)
@@ -23,11 +27,6 @@ class CardType(type):
 
     def __setitem__(cls, index, value):
         cls.prototypes[index] = value
-
-    def __contains__(cls, item):
-        if not isinstance(item, str):
-            raise ValueError("Item must be a string")
-        return item in cls.prototypes
 
 class Card(metaclass=CardType):
     """
@@ -37,9 +36,8 @@ class Card(metaclass=CardType):
 
     prototypes = {}
 
-    @property
-    def name(self):
-        return self.prototype.prototype
+    def __repr__(self):
+        return self.name[0]
 
     @property
     def alignment(self):
@@ -48,10 +46,11 @@ class Card(metaclass=CardType):
         if alignments.count(max_) > 1:
             return ALIGNMENT_NEUTRAL
 
-        return alignments.index(max_) + 1 # Convert to ALIGNMENT_
+    @property
+    def name(self):
+        return self.prototype.prototype
 
-    def __repr__(self):
-        return self.name[0]
+        return alignments.index(max_) + 1 # Convert to ALIGNMENT_
 
     def __init__(self, prototype, power=None, health=None, energy=None, nature=None, spirit=None):
         if isinstance(prototype, str):

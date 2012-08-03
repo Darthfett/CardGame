@@ -4,14 +4,11 @@ import card
 
 class Deck:
 
-    def remove(self, card):
-        self.cards.remove(card)
-
-    def add(self, card):
-        self.cards.append(card)
-
     def __bool__(self):
         return bool(self.cards)
+
+    def __contains__(self, card_):
+        return any(repr(c) == card_ for c in self.cards)
 
     def __str__(self):
         if self.cards:
@@ -19,17 +16,20 @@ class Deck:
         else:
             return ''
 
-    def get(self, card_):
-        return next((c for c in self.cards if repr(c) == card_ or repr(c) == card.name_for_card(card_)), None)
-
-    def __contains__(self, card_):
-        return any(repr(c) == card_ for c in self.cards)
-
-    def shuffle(self):
-        random.shuffle(self.cards)
+    def add(self, card):
+        self.cards.append(card)
 
     def draw(self):
         return self.cards.pop()
+
+    def get(self, card_):
+        return next((c for c in self.cards if repr(c) == card_ or repr(c) == card.name_for_card(card_)), None)
+
+    def remove(self, card):
+        self.cards.remove(card)
+
+    def shuffle(self):
+        random.shuffle(self.cards)
 
     def __init__(self, cards=None):
         if cards is None:

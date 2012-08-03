@@ -1,3 +1,5 @@
+import card
+
 PHASE_COUNT = 4
 
 (DRAW_PHASE,
@@ -46,14 +48,6 @@ def name_for_phase(phase):
         END_PHASE: "End"
     }[phase]
 
-def card_name(card):
-    return {
-        'I': "Imp",
-        'P': "Peasant",
-        'G': "Golem",
-        'K': "Knight"
-    }[card]
-
 BOARD_ACTIONS = {'b', 'board'}
 DRAW_ACTIONS = {'d', 'draw'}
 HAND_ACTIONS = {'h', 'hand'}
@@ -71,6 +65,21 @@ ACTIONS_FOR_PHASE = {
 
 PHASE_ACTIONS = set.union(*ACTIONS_FOR_PHASE.values())
 
+def print_hand(player):
+    if player.hand:
+        print(player.hand,'\n')
+    else:
+        print('No cards in hand\n')
+
+def print_board(p_field, e_field):
+
+    player_field = [(cell if cell is not None else ' ') for cell in p_field]
+    enemy_field = [(cell if cell is not None else ' ') for cell in e_field]
+
+    player_board = PLAYER_BOARD.format(*player_field)
+    enemy_board = PLAYER_BOARD.format(*enemy_field)
+    print(BOARD.format(enemy_board=enemy_board, player_board=player_board))
+
 def start_phase(game, round, phase, player):
     game.current_round = round
     game.current_phase = phase
@@ -79,21 +88,16 @@ def start_phase(game, round, phase, player):
     phase_name = name_for_phase(phase)
     enemy = game.next_player(player)
 
-    enemy_board = PLAYER_BOARD.format(*enemy.field)
-    player_board = PLAYER_BOARD.format(*player.field)
-
     print(ROUND_ANNOUNCEMENT.format(round=round, phase=phase_name))
-
-    print(BOARD.format(enemy_board=enemy_board, player_board=player_board))
 
     while True:
         action = input('Action? (help) ').strip()
 
         # Commands are case-insensitive, help is default.
         cmd = action.split()
-        cmd[0] = cmd[0].lower()
         if not cmd:
             cmd = ['help']
+        cmd[0] = cmd[0].lower()
 
         # Validate that action is good for current phase
         if cmd[0] in PHASE_ACTIONS and cmd[0] not in ACTIONS_FOR_PHASE[phase]:
@@ -104,23 +108,20 @@ def start_phase(game, round, phase, player):
 
         if cmd[0] in BOARD_ACTIONS:
             # Display board
-            print(BOARD.format(enemy_board=enemy_board, player_board=player_board))
+            print_board(player.field, enemy.field)
             continue
 
         if cmd[0] in DRAW_ACTIONS:
             # Draw card
             drawn_card = player.deck.draw()
             player.hand.add(drawn_card)
-            print('Drew {card}\n'.format(card=card_name(drawn_card)))
+            print('Drew {card}\n'.format(card=drawn_card.name))
             start_phase(game, round, STRAT_PHASE, player)
             return
 
         if cmd[0] in HAND_ACTIONS:
             # Display hand
-            if player.hand:
-                print(player.hand,'\n')
-            else:
-                print('No cards in hand\n')
+            print_hand(player)
             continue
 
         if cmd[0] in HELP_ACTIONS:
@@ -135,13 +136,14 @@ def start_phase(game, round, phase, player):
         if cmd[0] in PLAY_ACTIONS:
             # Play card cmd[1] on field at cmd[2]
             try:
-                card = cmd[1]
+                card_repr = cmd[1]
             except IndexError:
                 print('Must select a card name and an empty spot on the field.\n')
                 continue
 
-            if card not in player.hand:
-                print('No {c} card in hand.\n'.format(c=card_name(card)))
+            card_ = player.hand.get(card_repr)
+            if card_ is None:
+                print('No {card} card in hand.\n'.format(card=card.name_for_card(card_repr)))
                 continue
 
             try:
@@ -151,20 +153,19 @@ def start_phase(game, round, phase, player):
                 continue
 
             try:
-                current_field_card = player.field[field_cell]
+                current_field_card = player.field[field_cell - 1]
             except IndexError:
-                print('Field cell must be in range 0 <= cell <= 8.\n')
+                print('Field cell must be in range 1 <= cell <= 9.\n')
                 continue
 
-            if current_field_card != ' ':
+            if current_field_card is not None:
                 print('Spot on field is not empty.\n')
                 continue
 
             # Successful play
-            player.hand.remove(card)
-            player.field[field_cell] = card
-            player_board = PLAYER_BOARD.format(*player.field)
-            print(BOARD.format(enemy_board=enemy_board, player_board=player_board))
+            player.hand.remove(card_)
+            player.field[field_cell - 1] = card_
+            print_board(player.field, enemy.field)
             continue
 
         if cmd[0] in QUIT_ACTIONS:

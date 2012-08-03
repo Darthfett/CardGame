@@ -14,6 +14,9 @@ class Field:
     def __setitem__(self, index, value):
         self.cells[index] = value
 
+    def __delitem__(self, index):
+        self.cells[index] = None
+
     def row(self, index):
         """Get a list of the objects in row[index]."""
         return list(self.cells[index])
@@ -27,4 +30,4 @@ class Field:
         self.width = width
         self.height = height
         # Cells are in row-major order
-        self.cells = [' ' for _ in range(width * height)]
+        self.cells = [None for _ in range(width * height)]
